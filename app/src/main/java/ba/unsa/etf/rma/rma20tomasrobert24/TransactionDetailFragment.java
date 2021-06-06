@@ -1,8 +1,6 @@
 package ba.unsa.etf.rma.rma20tomasrobert24;
 
-import android.app.Activity;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -43,8 +41,12 @@ public class TransactionDetailFragment extends Fragment {
     private TextInputLayout  endDateView;
     private TextInputLayout descriptionView;
     private TextInputLayout  transactionIntervalView;
+    private EditText offlineMode;
+
+    private boolean online = false;
 
     private Transaction returnedTransaction;
+    private Transaction transaction;
     private int transactionPosition;
     private SimpleDateFormat format=new SimpleDateFormat("dd-MM-yyyy");
 
@@ -52,6 +54,8 @@ public class TransactionDetailFragment extends Fragment {
     private AlertDialog alert;
 
     private ITransactionDetailPresenter presenter;
+    private ITransactionListPresenter listPresenter;
+    private IAccountPresenter accountPresenter;
 
     public ITransactionDetailPresenter getPresenter() {
         if (presenter == null) {
@@ -60,10 +64,23 @@ public class TransactionDetailFragment extends Fragment {
         return presenter;
     }
 
+    public ITransactionListPresenter getListPresenter(){
+        if (listPresenter == null) {
+            listPresenter = new TransactionListPresenter(getActivity());
+        }
+        return listPresenter;
+    }
+     public IAccountPresenter getAccountPresenter(){
+        if(accountPresenter==null){
+            accountPresenter=new AccountPresenter(getActivity());
+        }
+        return accountPresenter;
+     }
+
     private OnReturn onReturn;
     public interface OnReturn {
-        public void onSave(Transaction transaction, int position, TransactionDetailFragment transactionDetailFragment);
-        public void onDelete(int position, TransactionDetailFragment transactionDetailFragment);
+        public void onSave(TransactionDetailFragment transactionDetailFragment);
+        public void onDelete(TransactionDetailFragment transactionDetailFragment);
     }
 
 
@@ -94,8 +111,20 @@ public class TransactionDetailFragment extends Fragment {
             endDateView = (TextInputLayout) fragmentView.findViewById(R.id.edTextView);
             descriptionView = (TextInputLayout) fragmentView.findViewById(R.id.descTextView);
             transactionIntervalView = (TextInputLayout) fragmentView.findViewById(R.id.interTextView);
+            offlineMode = (EditText) fragmentView.findViewById(R.id.offlineEditText);
+
+            if(!NetworkChecker.isConnected(getContext())) {
+                online=false;
+                if (getPresenter().getTransaction().getTitle().equals("")) {
+                    offlineMode.setText("Offline dodavanje");
+                } else {
+                    offlineMode.setText("Offline izmjena");
+                }
+            }
+
 
             onReturn=(OnReturn) getActivity();
+
 
 
             final String[] ClipcodesText = new String[]{"Individual income", "Individual payment", "Purchase", "Regular income", "Regular payment"};
@@ -129,7 +158,7 @@ public class TransactionDetailFragment extends Fragment {
                 public void onNothingSelected(AdapterView<?> parent) {
                 }
             });
-            Transaction transaction = getPresenter().getTransaction();
+            transaction=getPresenter().getTransaction();
             spinner.setSelection(Type.getPosition(transaction.getType()));
 
             editTitle.setText(transaction.getTitle());
@@ -295,7 +324,7 @@ public class TransactionDetailFragment extends Fragment {
                         if (editDescription.getText() == null) editDescription.setText("");
                         try {
                             returnedTransaction =
-                                    new Transaction(format.parse(editDate.getText().toString()),
+                                    new Transaction(transaction.getId(),format.parse(editDate.getText().toString()),
                                             Double.parseDouble(editAmount.getText().toString()),
                                             editTitle.getText().toString(),
                                             Type.getType(spinner.getSelectedItemPosition()),
@@ -309,7 +338,7 @@ public class TransactionDetailFragment extends Fragment {
                     } else if (type == Type.INDIVIDUALINCOME) {
                         try {
                             returnedTransaction =
-                                    new Transaction(format.parse(editDate.getText().toString()),
+                                    new Transaction(transaction.getId(),format.parse(editDate.getText().toString()),
                                             Double.parseDouble(editAmount.getText().toString()),
                                             editTitle.getText().toString(),
                                             Type.getType(spinner.getSelectedItemPosition()),
@@ -323,7 +352,7 @@ public class TransactionDetailFragment extends Fragment {
                     } else {
                         try {
                             returnedTransaction =
-                                    new Transaction(format.parse(editDate.getText().toString()),
+                                    new Transaction(transaction.getId(),format.parse(editDate.getText().toString()),
                                             Double.parseDouble(editAmount.getText().toString()),
                                             editTitle.getText().toString(),
                                             Type.getType(spinner.getSelectedItemPosition()),
@@ -336,7 +365,9 @@ public class TransactionDetailFragment extends Fragment {
                         }
 
                     }
-                    onReturn.onSave(returnedTransaction, transactionPosition, TransactionDetailFragment.this);
+                    getListPresenter().updateTransaction("update", returnedTransaction);
+                    getAccountPresenter().updateBudget();
+                    onReturn.onSave(TransactionDetailFragment.this);
                 }
             });
 
@@ -350,7 +381,9 @@ public class TransactionDetailFragment extends Fragment {
                             "Yes",
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int id) {
-                                    onReturn.onDelete(transactionPosition, TransactionDetailFragment.this);
+                                    getListPresenter().deleteTransaction("",transaction);
+                                    getAccountPresenter().updateBudget();
+                                    onReturn.onDelete( TransactionDetailFragment.this);
                                     dialog.cancel();
                                 }
                             });
@@ -367,6 +400,8 @@ public class TransactionDetailFragment extends Fragment {
                 }
             });
         }
+
+
         return fragmentView;
     }
         private boolean validateTitle(String title){
@@ -434,5 +469,9 @@ public class TransactionDetailFragment extends Fragment {
             ColorStateList colorStateList = ColorStateList.valueOf(Color.parseColor("#00ff00"));
             ViewCompat.setBackgroundTintList(descriptionView, colorStateList);
             return true;
+        }
+
+        public void setOffline(){
+            online=false;
         }
 }

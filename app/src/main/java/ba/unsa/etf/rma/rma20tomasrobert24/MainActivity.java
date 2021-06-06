@@ -7,6 +7,7 @@ import androidx.viewpager.widget.ViewPager;
 
 
 import android.app.FragmentTransaction;
+import android.content.IntentFilter;
 import android.os.Bundle;
 
 import android.widget.FrameLayout;
@@ -19,6 +20,8 @@ public class MainActivity extends AppCompatActivity implements TransactionListFr
     private ViewPagerAdapter viewPagerAdapter;
     private ViewPager viewPager;
     private TransactionListFragment transactionListFragment;
+    private ConnectivityBroadcastReceiver receiver=new ConnectivityBroadcastReceiver();
+    private IntentFilter filter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
 
 
     @Override
@@ -59,6 +62,8 @@ public class MainActivity extends AppCompatActivity implements TransactionListFr
                 fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
             }
         }
+
+
     }
 
     @Override
@@ -81,11 +86,11 @@ public class MainActivity extends AppCompatActivity implements TransactionListFr
                     .commit();
             viewPagerAdapter.notifyDataSetChanged();
         }
+
     }
 
     @Override
-    public void onSave(Transaction transaction, int position, TransactionDetailFragment transactionDetailFragment){
-        TransactionModel.transactions.set(position, transaction);
+    public void onSave( TransactionDetailFragment transactionDetailFragment){
         TransactionListFragment listFragment = new TransactionListFragment();
         if (twoPaneMode){
             getSupportFragmentManager().beginTransaction()
@@ -102,8 +107,7 @@ public class MainActivity extends AppCompatActivity implements TransactionListFr
     }
 
     @Override
-    public void onDelete(int position, TransactionDetailFragment transactionDetailFragment){
-        TransactionModel.transactions.remove(position);
+    public void onDelete(TransactionDetailFragment transactionDetailFragment){
         TransactionListFragment listFragment = new TransactionListFragment();
         if (twoPaneMode){
             getSupportFragmentManager().beginTransaction()
@@ -135,20 +139,18 @@ public class MainActivity extends AppCompatActivity implements TransactionListFr
         super.onBackPressed();
     }
 
+
+
     @Override
     public void onResume() {
         super.onResume();
+        registerReceiver(receiver, filter);
     }
 
     @Override
     public void onPause() {
+        unregisterReceiver(receiver);
         super.onPause();
     }
-
-
-
-
-
-
 
 }

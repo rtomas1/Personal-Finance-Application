@@ -2,10 +2,15 @@ package ba.unsa.etf.rma.rma20tomasrobert24;
 
 public class Account {
     Double budget;
-    int totalLimit;
-    int monthLimit;
+    Double totalLimit;
+    Double monthLimit;
 
-    public Account(double budget, int totalLimit, int monthLimit) {
+    public Account(double budget, double totalLimit, double monthLimit) {
+        this.budget = budget;
+        this.totalLimit = totalLimit;
+        this.monthLimit = monthLimit;
+    }
+    public Account(Double budget, Double totalLimit, Double monthLimit){
         this.budget = budget;
         this.totalLimit = totalLimit;
         this.monthLimit = monthLimit;
@@ -19,19 +24,19 @@ public class Account {
         this.budget = budget;
     }
 
-    public Integer getTotalLimit() {
-        return new Integer(totalLimit);
+    public Double getTotalLimit() {
+        return new Double(totalLimit);
     }
 
-    public void setTotalLimit(int totalLimit) {
+    public void setTotalLimit(double totalLimit) {
         this.totalLimit = totalLimit;
     }
 
-    public Integer getMonthLimit() {
-        return new Integer(monthLimit);
+    public Double getMonthLimit() {
+        return new Double(monthLimit);
     }
 
-    public void setMonthLimit(int monthLimit) {
+    public void setMonthLimit(double monthLimit) {
         this.monthLimit = monthLimit;
     }
 }

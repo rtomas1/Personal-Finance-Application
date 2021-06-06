@@ -15,6 +15,7 @@ public class Transaction implements Serializable, Parcelable {
     String itemDescription;
     int transactionInterval;
     Date endDate;
+    int id;
 
 
     public Transaction(Date date, Double amount, String title, Type type, String itemDescription, int transactionInterval, Date endDate) {
@@ -41,7 +42,33 @@ public class Transaction implements Serializable, Parcelable {
             this.endDate=null;
         }
     }
+    public Transaction(int id,Date date, Double amount, String title, Type type, String itemDescription, int transactionInterval, Date endDate) {
+        this.id=id;
+        this.date = date;
+        this.amount = amount;
+        this.title = title;
+        this.type = type;
+        if(type.equals(Type.INDIVIDUALINCOME) || type.equals(Type.REGULARINCOME)){
+            this.itemDescription=null;
+        }
+        else{
+            this.itemDescription=itemDescription;
+        }
+        if(type.equals(Type.REGULARINCOME) || type.equals(Type.REGULARPAYMENT)){
+            this.transactionInterval=transactionInterval;
+        }
+        else{
+            this.transactionInterval=0;
+        }
+        if(type.equals(Type.REGULARINCOME) || type.equals(Type.REGULARPAYMENT)){
+            this.endDate=endDate;
+        }
+        else{
+            this.endDate=null;
+        }
+    }
     public Transaction(Parcel parcel){
+        id=parcel.readInt();
         long pomocniDate=parcel.readLong();
         date=new Date(pomocniDate);
         amount=parcel.readDouble();
@@ -121,6 +148,14 @@ public class Transaction implements Serializable, Parcelable {
         this.endDate = endDate;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -129,6 +164,7 @@ public class Transaction implements Serializable, Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         SimpleDateFormat simpleDateFormat=new SimpleDateFormat("dd-MM-yyyy");
+        dest.writeInt(id);
         dest.writeString(simpleDateFormat.format(date));
         dest.writeDouble(amount);
         dest.writeString(title);

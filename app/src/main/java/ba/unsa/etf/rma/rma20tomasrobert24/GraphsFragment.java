@@ -57,6 +57,7 @@ public class GraphsFragment extends Fragment {
         ukupnoChart=fragmentView.findViewById(R.id.ukupnoChart);
 
 
+
         ArrayList<BarEntry> potrosnja=new ArrayList<>();
         potrosnja.add(new BarEntry(1, (float) getPresenter().getOutcomeByMonth(1)));
         potrosnja.add(new BarEntry(2, (float) getPresenter().getOutcomeByMonth(2)));

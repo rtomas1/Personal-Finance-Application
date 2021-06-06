@@ -9,6 +9,7 @@ import androidx.fragment.app.FragmentPagerAdapter;
 
 public class ViewPagerAdapter extends FragmentPagerAdapter {
     FragmentManager fragmentManager;
+    public Fragment[] fragments = new Fragment[3];
 
     public ViewPagerAdapter(FragmentManager fm) {
         super(fm);
@@ -32,6 +33,8 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
 
         return null;
     }
+
+
     /*
     Znam da bas nije najbolje rjesenje da bi mogao swipe sa grafova na pocetni fragment, ali je ovo jedino sto mi radi sa viewPagerom
      */
@@ -46,4 +49,6 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
     public Object instantiateItem(@NonNull ViewGroup container, int position) {
         return super.instantiateItem(container, position);
     }
+
+
 }

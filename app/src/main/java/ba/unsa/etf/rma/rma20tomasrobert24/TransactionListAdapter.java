@@ -26,6 +26,10 @@ public class TransactionListAdapter extends ArrayAdapter<Transaction> {
         resource = _resource;
     }
 
+    public void removeTransactions(){
+        this.clear();
+    }
+
     public void setTransactions(ArrayList<Transaction> transactions) {
         this.addAll(transactions);
     }

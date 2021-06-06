@@ -21,7 +21,7 @@ import java.util.Date;
 import java.util.Locale;
 
 
-public class TransactionListFragment extends Fragment implements ITransactionListView{
+public class TransactionListFragment extends Fragment implements ITransactionListView, IAccountView{
     private Button buttonlijevo;
     private Button buttondesno;
     private ListView listTransactions;
@@ -33,11 +33,12 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
     private ITransactionListPresenter transactionListPresenter;
 
     private TransactionListAdapter transactionListAdapter;
+    private IAccountPresenter accountPresenter;
     private SpinnerAdapter adapterFilter;
     private SpinnerAdapter adapterSort;
-    private Account account;
     private EditText editBudget;
     private EditText editLimit;
+    private Account account=AccountModel.account;
 
     private Date currentDate=new Date();
 
@@ -48,7 +49,16 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         return transactionListPresenter;
     }
 
+    public IAccountPresenter getAccountPresenter(){
+        if(accountPresenter==null){
+            accountPresenter=new AccountPresenter(this, getActivity());
+        }
+        return accountPresenter;
+    }
+
     private OnItemClick onItemClick;
+
+
     public interface OnItemClick {
         public void onItemClicked(Transaction transaction, TransactionListFragment transactionListFragment);
     }
@@ -68,7 +78,9 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         transactionListAdapter=new TransactionListAdapter(getActivity(), R.layout.list_element, new ArrayList<Transaction>());
         listTransactions= (ListView) fragmentView.findViewById(R.id.listView);
         listTransactions.setAdapter(transactionListAdapter);
-        getPresenter().refreshTransactions(currentDate, 0, 0);
+        if(NetworkChecker.isConnected(getContext())) {
+            getPresenter().getTransactions("");
+        }
 
         final String [] ClipcodesText = new String[]{"Filter by:","Individual income", "Individual payment", "Purchase", "Regular income", "Regular payment"};
         Integer [] ClipcodesImage = new Integer[]{R.drawable.blank,R.drawable.individual_income, R.drawable.individual_payment, R.drawable.purchase, R.drawable.regular_income, R.drawable.regular_payment};
@@ -160,23 +172,41 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
                 onItemClick.onItemClicked(newTransaction, TransactionListFragment.this);
             }
         });
-        account=new Account(5680,10000,2000);
         editBudget=(EditText) fragmentView.findViewById(R.id.budget);
         editLimit=(EditText) fragmentView.findViewById(R.id.limit);
-        editLimit.setText(account.getMonthLimit().toString());
+        if(NetworkChecker.isConnected(getContext())){
+            getAccountPresenter().getAccount("");
+        }
+
+        editLimit.setText(account.getTotalLimit().toString());
         editBudget.setText(account.getBudget().toString());
 
         onItemClick=(OnItemClick) getActivity();
         return fragmentView;
     }
 
+
+
     @Override
     public void setTransactions(ArrayList<Transaction> transactions) {
+        transactionListAdapter.removeTransactions();
         transactionListAdapter.setTransactions(transactions);
     }
 
     @Override
     public void notifyTransactionListDataSetChanged() {
+    }
+
+    @Override
+    public void setAccount(Account account) {
+        this.account=account;
+        editLimit.setText(account.getTotalLimit().toString());
+        editBudget.setText(account.getBudget().toString());
+    }
+
+    @Override
+    public void notifyAccountChanged() {
+
     }
 
     private AdapterView.OnItemClickListener listItemClickListener = new AdapterView.OnItemClickListener() {
